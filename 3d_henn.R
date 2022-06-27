@@ -6,7 +6,9 @@ library(sf)
 library(units)
 library(rayshader)
 library(tidycensus)
+showtext_opts(dpi = 96)
 
+#get Hennepin County population data
 henn_pop_dens <- get_acs(geography = "tract",
                          state = "MN",
                          county = "Hennepin",
@@ -15,11 +17,14 @@ henn_pop_dens <- get_acs(geography = "tract",
                          geometry = TRUE) %>% 
   mutate(area = st_area(geometry))
 
+#calculate population density per square mile
 henn_pop_dens$area <- set_units(henn_pop_dens$area, mi^2)
 henn_pop_dens$dens <- henn_pop_dens$estimate/henn_pop_dens$area
-henn_pop_dens
 
-showtext_opts(dpi = 96)
+#get a nice font
+font_add_google("Crimson Pro", "crimson")
+
+#set up the plot
 pop_dens_map <- ggplot(henn_pop_dens) + geom_sf(aes(fill = as.numeric(dens)),
                                                 color = NA) +
   labs(title = "Hennepin County, Minnesota",
@@ -37,6 +42,7 @@ pop_dens_map <- ggplot(henn_pop_dens) + geom_sf(aes(fill = as.numeric(dens)),
                           legend.position = "bottom")
 showtext_opts(dpi = 300)
 
+#render plot
 plot_gg(pop_dens_map,multicore = TRUE,width=5,height=5,scale=200,windowsize=c(1600,1200),
         zoom = 0.6, theta = 30, phi = 40)
 render_camera(zoom = 0.45, theta = 30, phi = 35)
